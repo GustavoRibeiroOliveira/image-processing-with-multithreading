@@ -106,22 +106,24 @@ def save_video(output_frames, width, height, fps, filename):
 
 
 # Função que encapsula o processamento de cada algoritmo
-def process_algorithm(algorithm_name, video_segments, width, height, fps, execution_times):
+def process_algorithm(algorithm_name, video_segments, width, height, fps, execution_times,
+                      execution_number, num_executions):
+
     print(f"{algorithm_name} está tentando acessar a seção crítica...")
     with semaphore:  # Acesso à área crítica
         print(f"{algorithm_name} obteve acesso à seção crítica.")
         algorithm_start_time = time.time()  # Tempo dentro da seção crítica
         if algorithm_name == "FIFO":
             output = fifo(video_segments)
-            if not execution_times[algorithm_name]:
+            if execution_number+1 == num_executions:
                 save_video(output, width, height, fps, "output_fifo.mp4")
         elif algorithm_name == "SJF":
             output = shortest_job_first(video_segments)
-            if not execution_times[algorithm_name]:
+            if execution_number+1 == num_executions:
                 save_video(output, width, height, fps, "output_sjf.mp4")
         elif algorithm_name == "Round Robin":
             output = round_robin(video_segments)
-            if not execution_times[algorithm_name]:
+            if execution_number+1 == num_executions:
                 save_video(output, width, height, fps, "output_round_robin.mp4")
         exec_time = time.time() - algorithm_start_time  # Tempo de execução do algoritmo
         execution_times[algorithm_name].append(exec_time)
@@ -132,7 +134,7 @@ def process_algorithm(algorithm_name, video_segments, width, height, fps, execut
 def main():
     video_path = "video.mp4"
 
-    num_executions = 2
+    num_executions = 5
     execution_times = {
         "FIFO": [],
         "Round Robin": [],
@@ -145,11 +147,14 @@ def main():
         # Cria threads para cada algoritmo
         threads = []
         threads.append(
-            Thread(target=process_algorithm, args=("FIFO", video_segments, width, height, fps, execution_times)))
+            Thread(target=process_algorithm, args=("FIFO", video_segments, width, height, fps,
+                                                   execution_times, i, num_executions)))
         threads.append(
-            Thread(target=process_algorithm, args=("SJF", video_segments, width, height, fps, execution_times)))
+            Thread(target=process_algorithm, args=("SJF", video_segments, width, height, fps,
+                                                   execution_times, i, num_executions)))
         threads.append(
-            Thread(target=process_algorithm, args=("Round Robin", video_segments, width, height, fps, execution_times)))
+            Thread(target=process_algorithm, args=("Round Robin", video_segments, width, height, fps,
+                                                   execution_times, i, num_executions)))
 
         # Embaralhar a lista de threads antes de iniciar
         random.shuffle(threads)
@@ -162,7 +167,7 @@ def main():
         for thread in threads:
             thread.join()
 
-        print(f"Execução [{i}] finalizada. \n\n")
+        print(f"Execução [{i+1}] finalizada. \n\n")
 
     # Calcula e imprime a média dos tempos
     print(f"Média de tempo de execução FIFO: {sum(execution_times['FIFO']) / num_executions:.4f} segundos")
