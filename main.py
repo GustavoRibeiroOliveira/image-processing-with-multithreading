@@ -130,9 +130,8 @@ def process_algorithm(algorithm_name, video_segments, width, height, fps, execut
 
 # Função principal para executar e medir cada algoritmo
 def main():
-    video_path = "video.mp4"  # Substitua pelo caminho do seu vídeo
+    video_path = "video.mp4"
 
-    # Número de execuções para cada algoritmo
     num_executions = 2
     execution_times = {
         "FIFO": [],
